@@ -14,27 +14,28 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check if pom.xml exists inside subdirectory
-        run: |
-          if [ ! -f "meraldaCallsWithCodePush/pom.xml" ]; then
-            echo "❌ pom.xml not found in subfolder!"
-            exit 1
-          else
-            echo "✅ pom.xml found in subfolder."
-          fi
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Firefox and xvfb
+      - name: Install geckodriver
         run: |
-          sudo apt-get update
-          sudo apt-get install -y firefox xvfb
+          GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep 'tag_name' | cut -d\" -f4)
+          wget https://github.com/mozilla/geckodriver/releases/download/$GECKODRIVER_VERSION/geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz
+          tar -xvzf geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz
+          chmod +x geckodriver
+          sudo mv geckodriver /usr/local/bin/
 
-      - name: Run tests with Xvfb
+      - name: Build and Test with Maven
         run: |
           cd meraldaCallsWithCodePush
-          xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' mvn clean test
+          mvn clean test
+
+      - name: Upload Surefire Test Report
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: surefire-reports
+          path: meraldaCallsWithCodePush/target/surefire-reports/
