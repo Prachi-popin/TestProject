@@ -20,9 +20,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install geckodriver
+      - name: Install GeckoDriver (latest)
         run: |
-          GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep 'tag_name' | cut -d\" -f4)
+          sudo apt-get update
+          sudo apt-get install -y jq
+          GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | jq -r '.tag_name')
           wget https://github.com/mozilla/geckodriver/releases/download/$GECKODRIVER_VERSION/geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz
           tar -xvzf geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz
           chmod +x geckodriver
@@ -35,7 +37,7 @@ jobs:
 
       - name: Upload Surefire Test Report
         if: failure()
-        uses:  actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
           path: meraldaCallsWithCodePush/target/surefire-reports/
