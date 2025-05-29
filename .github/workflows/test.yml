@@ -29,7 +29,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build and Test with Maven
+      - name: Install Firefox and xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y firefox xvfb
+
+      - name: Run tests with Xvfb
         run: |
           cd meraldaCallsWithCodePush
-          mvn clean test
+          xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' mvn clean test
