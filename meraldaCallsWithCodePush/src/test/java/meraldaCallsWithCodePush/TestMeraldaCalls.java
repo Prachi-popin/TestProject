@@ -14,20 +14,27 @@ public class TestMeraldaCalls {
     @Test
     public void testVideoCallFlow() throws Exception  {
 
-        System.out.println("Setting Firefox media preferences...");
+        System.out.println("Setting up Firefox driver with media preferences and headless mode...");
+
+        WebDriverManager.firefoxdriver().setup();
+
         FirefoxOptions options = new FirefoxOptions();
+
+        // Your existing Firefox preferences
         options.addPreference("media.navigator.permission.disabled", true);
         options.addPreference("media.navigator.streams.fake", true);
         options.addPreference("media.peerconnection.enabled", true);
 
-        System.out.println("Launching Firefox driver...");
-        WebDriver driver = new FirefoxDriver(options);
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-        Actions actions = new Actions(driver);
+        // Add headless argument here
+        options.addArguments("--headless");
+
+        driver = new FirefoxDriver(options);
+        wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        actions = new Actions(driver);
 
         System.out.println("Maximizing browser window...");
         driver.manage().window().maximize();
-
+        
         try {
             System.out.println("Navigating to Meralda website...");
             driver.get("https://meralda.scalenext.io/");
