@@ -2,26 +2,17 @@ name: Maven Build
 
 on:
   push:
-    branches: [ master ]
+    branches: [ MySecondBranch ]
   pull_request:
-    branches: [ master ]
+    branches: [ MySecondBranch ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Check if pom.xml exists inside subdirectory
-        run: |
-          if [ ! -f "meraldaCallsWithCodePush/pom.xml" ]; then
-            echo "❌ pom.xml not found in subfolder!"
-            exit 1
-          else
-            echo "✅ pom.xml found in subfolder."
-          fi
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -29,12 +20,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Firefox and xvfb
+      - name: Install Firefox
         run: |
-          sudo apt-get update
-          sudo apt-get install -y firefox xvfb
+          brew install --cask firefox
 
-      - name: Run tests with Xvfb
+      - name: Run tests
         run: |
           cd meraldaCallsWithCodePush
-          xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' mvn clean test
+          mvn clean test
