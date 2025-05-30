@@ -1,45 +1,48 @@
 package meraldaCallsWithCodePush;
-import org.testng.annotations.Test;
-import java.time.Duration;
-import org.testng.Assert;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.annotations.*;
+
+import java.time.Duration;
 
 public class TestMeraldaCalls {
 
-    @Test
-    public void testVideoCallFlow() throws Exception  {
+    private WebDriver driver;
+    private WebDriverWait wait;
+    private Actions actions;
 
+    @BeforeMethod
+    public void setUp() {
         System.out.println("Setting up Firefox driver with media preferences and headless mode...");
 
         WebDriverManager.firefoxdriver().setup();
 
         FirefoxOptions options = new FirefoxOptions();
-
-        // Your existing Firefox preferences
         options.addPreference("media.navigator.permission.disabled", true);
         options.addPreference("media.navigator.streams.fake", true);
         options.addPreference("media.peerconnection.enabled", true);
-
-        // Add headless argument here
         options.addArguments("--headless");
 
         driver = new FirefoxDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         actions = new Actions(driver);
 
-        System.out.println("Maximizing browser window...");
         driver.manage().window().maximize();
-        
+    }
+
+    @Test
+    public void testVideoCallFlow() {
         try {
             System.out.println("Navigating to Meralda website...");
             driver.get("https://meralda.scalenext.io/");
-            System.out.println("URL opened: " + driver.getCurrentUrl());
-            Assert.assertEquals("https://meralda.scalenext.io/", driver.getCurrentUrl());
+            Assert.assertEquals(driver.getCurrentUrl(), "https://meralda.scalenext.io/");
 
             System.out.println("Waiting and clicking on 'Jewellery'...");
             WebElement jewellery = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//*[@id=\"homeMainnavBarDrop\"]/div/ul/li[2]/a")));
@@ -211,6 +214,14 @@ public class TestMeraldaCalls {
             e.printStackTrace();
         } finally {
             System.out.println("Closing browser...");
+            driver.quit();
+        }
+    }
+}
+ @AfterMethod
+    public void tearDown() {
+        System.out.println("Closing browser...");
+        if (driver != null) {
             driver.quit();
         }
     }
