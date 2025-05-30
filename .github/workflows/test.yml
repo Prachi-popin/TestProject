@@ -1,13 +1,17 @@
-name: Maven Build
+name: Maven-Build
 
 on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:   
+    
 
 jobs:
   build:
+    name: run-maven-build
+    
     runs-on: ubuntu-latest
 
     steps:
@@ -19,25 +23,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Install GeckoDriver (latest)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
-          GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | jq -r '.tag_name')
-          wget https://github.com/mozilla/geckodriver/releases/download/$GECKODRIVER_VERSION/geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz
-          tar -xvzf geckodriver-$GECKODRIVER_VERSION-linux64.tar.gz
-          chmod +x geckodriver
-          sudo mv geckodriver /usr/local/bin/
-
+          
       - name: Build and Test with Maven
         run: |
           cd meraldaCallsWithCodePush
           mvn clean test
 
-      - name: Upload Surefire Test Report
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: surefire-reports
-          path: meraldaCallsWithCodePush/target/surefire-reports/
+     
