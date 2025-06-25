@@ -1,10 +1,11 @@
-name: Maven Build
+name: Meralda calls with CodePush Tests
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ MySecondBranch ]
+    branches: [ master ]
   pull_request:
-    branches: [ MySecondBranch ]
+    branches: [ master]
 
 jobs:
   build:
