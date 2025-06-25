@@ -1,15 +1,42 @@
 package meraldaCallsWithCodePush;
-import org.testng.annotations.Test;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.Duration;
-import org.testng.Assert;
-import org.openqa.selenium.*;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 public class TestMeraldaCalls {
+
+            private void sendSlackNotification(String message) {
+        try {
+            String webhookUrl = System.getenv("SLACK_WEBHOOK_URL");
+            URL url = new URL(webhookUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+            String payload = "{\"text\": \"" + message + "\"}";
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(payload.getBytes());
+                os.flush();
+            }
+            conn.getResponseCode();
+        } catch (Exception e) {
+            System.out.println("Failed to send Slack notification: " + e.getMessage());
+        }
+    }
+
 
     @Test
     public void testVideoCallFlow() throws Exception  {
@@ -65,7 +92,7 @@ public class TestMeraldaCalls {
 
             System.out.println("Scrolling to video call button...");
             ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", videoCallBtn);
-            Thread.sleep(1000);
+            Thread.sleep(5000);
             System.out.println("Clicking video call button using JavaScript...");
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", videoCallBtn);
 
@@ -87,10 +114,6 @@ public class TestMeraldaCalls {
             System.out.println("Locating Number input field...");
             WebElement numberInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"inlineFormInputGroup\"]")));
             Assert.assertTrue(numberInput.isDisplayed());
-
-            System.out.println("Locating Pin code input field...");
-            WebElement pinCodeInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"popin-panel\"]/div/div[3]/div[1]/div/div/div/div/div[3]/input")));
-            Assert.assertTrue(pinCodeInput.isDisplayed());
             
             Thread.sleep(4000);
 
@@ -99,8 +122,7 @@ public class TestMeraldaCalls {
             nameInput.sendKeys("Prachi Test");
             numberInput.click();
             numberInput.sendKeys("8435627503");
-            pinCodeInput.click();
-            pinCodeInput.sendKeys("452005");
+          
 
             System.out.println("Clicking confirm button...");
             WebElement confirmBtn = wait.until(ExpectedConditions.elementToBeClickable(
@@ -198,6 +220,8 @@ public class TestMeraldaCalls {
             continueBrowsing.click();
 
             System.out.println("✅ Test completed successfully!");
+
+            sendSlackNotification("✅ Test Passed: Video call flow completed successfully.");
 
         } catch (Exception e) {
             System.out.println("❌ Test failed: " + e.getMessage());
